@@ -11,17 +11,17 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # <==== Code starts here ====>
-smd1 = pickle.load(open('smd1.pkl', 'rb'))
-simple1 = pickle.load(open('simple1.pkl', 'rb'))
-similarity1 = pickle.load(open('similarity1.pkl', 'rb'))
+smd1 = pickle.load(open('./pkl/smd1.pkl', 'rb'))
+simple1 = pickle.load(open('./pkl/simple1.pkl', 'rb'))
+similarity1 = pickle.load(open('./pkl/similarity1.pkl', 'rb'))
 
 smd1 = smd1.reset_index()
 titles1 = smd1['title']
 indices1 = pd.Series(smd1.index, index=smd1['title'])
 
-smd2 = pickle.load(open('smd2.pkl', 'rb'))
-simple2 = pickle.load(open('simple2.pkl', 'rb'))
-similarity2 = pickle.load(open('similarity2.pkl', 'rb'))
+smd2 = pickle.load(open('./pkl/smd2.pkl', 'rb'))
+simple2 = pickle.load(open('./pkl/simple2.pkl', 'rb'))
+similarity2 = pickle.load(open('./pkl/similarity2.pkl', 'rb'))
 
 smd2 = smd2.reset_index()
 titles2 = smd2['title']
