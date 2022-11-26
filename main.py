@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import requests
 import warnings
+import time
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -27,6 +28,9 @@ smd2 = smd2.reset_index()
 titles2 = smd2['title']
 indices2 = pd.Series(smd2.index, index=smd2['title'])
 
+smd3 = pickle.load(open('./pkl/recommendData.pkl', 'rb'))
+collaboModel = pickle.load(open('./pkl/recommendModel.pkl', 'rb'))
+
 
 def get_recommendations1(title):
     idx = indices1[title]
@@ -44,6 +48,16 @@ def get_recommendations2(title):
     sim_scores = sim_scores[1:31]
     movie_indices = [i[0] for i in sim_scores]
     return titles2.iloc[movie_indices]
+
+
+def collabo(number):
+    rank = []
+    for columns, items in smd3.iterrows():
+        test = []
+        test.append(items[6])
+        test.append(collaboModel.predict(number4, items[0])[3])
+        rank.append(test)
+    return rank
 
 
 st.markdown("<h2 style='text-align: center; color: blue;'>Coursera Course Recommendation System</h2>",
@@ -75,12 +89,26 @@ with tab2:
     elif sub_option1 == 'Metadata Based Recommender':
         input = st.text_input("keyword")
         number3 = st.number_input("Insert a number", min_value=1, max_value=30, step=1, format="%d", key=2)
-        if st.button('Show Recommended Courses'):
+        if st.button('Show Recommended Courses', key=10):
             recommend = get_recommendations2(input)
             st.table(recommend.iloc[0:number3].reset_index(drop=True))
             st.text(" ")
 
 with tab3:
-    st.write("Collaborative Filtering")
+    number4 = st.number_input("Insert a UserId", min_value=1, max_value=671, step=1, format="%d", key=3)
+    if st.button('Show Recommended Courses', key=11):
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write('User rating')
+            temp = smd3[smd3['userId'] == number4]
+            st.table(temp[['title', 'rating']])
+        with col2:
+            with st.spinner('Wait for it...'):
+                df = pd.DataFrame(data=collabo(number4), columns=['title', 'score'])
+                df.sort_values(ascending=False, by='score', inplace=True)
+                df.drop_duplicates(subset=None, keep='first', inplace=True, ignore_index=False)
+                time.sleep(7)
+            st.write('Recommended Movie')
+            st.table(df[0:20].reset_index(drop=True))
 
-# <==== Code ends here ====>
+        # <==== Code ends here ====>
