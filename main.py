@@ -2,12 +2,11 @@
 
 import pickle
 import streamlit as st
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import requests
 import warnings
 import time
+from PIL import Image
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
@@ -64,7 +63,7 @@ def collabo(number):
     return rank
 
 
-st.markdown("<h2 style='text-align: center; color: blue;'>Coursera Course Recommendation System</h2>",
+st.markdown("<h2 style='text-align: center; color: black;'>🎥 Movie Recommendation System</h2>",
             unsafe_allow_html=True)
 st.markdown(
     "<h4 style='text-align: center; color: black;'>Find similar courses from a dataset of over 3,000 courses from Coursera!</h4>",
@@ -77,8 +76,35 @@ tab1, tab2, tab3, tab4 = st.tabs(
 
 with tab1:
     number1 = st.number_input("Insert a number", min_value=1, max_value=250, step=1, format="%d", key=0)
+    tab1_poster = simple1[["title", "year", "vote_count", "vote_average", "popularity"]].head(number1).reset_index(
+        drop=False)
     simple = simple1[["title", "year", "vote_count", "vote_average", "popularity"]].head(number1).reset_index(drop=True)
     st.table(simple)
+
+    # # show poster
+    # col1, col2, col3, col4 = st.columns(4)
+    # tab1_poster = tab1_poster['index'].values
+    # st.write(tab1_poster)
+    # for i in range(len(tab1_poster)):
+    #     if i % 4 == 0:
+    #         with col1:
+    #             poster_id = tab1_poster[i]
+    #             st.image("https://image.tmdb.org/t/p/w500/8sMb6VIWs253IZ0X56vC6v7FjnB.jpg", width=150)
+    #
+    #     elif i % 4 == 1:
+    #         with col2:
+    #             poster_id = tab1_poster[i]
+    #             st.image("https://image.tmdb.org/t/p/w500/8sMb6VIWs253IZ0X56vC6v7FjnB.jpg", width=150)
+    #
+    #     elif i % 4 == 2:
+    #         with col3:
+    #             poster_id = tab1_poster[i]
+    #             st.image("https://image.tmdb.org/t/p/w500/8sMb6VIWs253IZ0X56vC6v7FjnB.jpg", width=150)
+    #
+    #     elif i % 4 == 3:
+    #         with col4:
+    #             poster_id = tab1_poster[i]
+    #             st.image("https://image.tmdb.org/t/p/w500/8sMb6VIWs253IZ0X56vC6v7FjnB.jpg", width=150)
 
 with tab2:
     sub_option1 = st.selectbox('Please select Sub Recommender!', ('Movie Description Based Recommender',
