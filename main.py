@@ -1,6 +1,7 @@
 # <==== Importing Dependencies ====>
 
 import pickle
+
 import streamlit as st
 import pandas as pd
 import requests
@@ -81,31 +82,6 @@ with tab1:
     simple = simple1[["title", "year", "vote_count", "vote_average", "popularity"]].head(number1).reset_index(drop=True)
     st.table(simple)
 
-    # # show poster
-    # col1, col2, col3, col4 = st.columns(4)
-    # tab1_poster = tab1_poster['index'].values
-    # st.write(tab1_poster)
-    # for i in range(len(tab1_poster)):
-    #     if i % 4 == 0:
-    #         with col1:
-    #             poster_id = tab1_poster[i]
-    #             st.image("https://image.tmdb.org/t/p/w500/8sMb6VIWs253IZ0X56vC6v7FjnB.jpg", width=150)
-    #
-    #     elif i % 4 == 1:
-    #         with col2:
-    #             poster_id = tab1_poster[i]
-    #             st.image("https://image.tmdb.org/t/p/w500/8sMb6VIWs253IZ0X56vC6v7FjnB.jpg", width=150)
-    #
-    #     elif i % 4 == 2:
-    #         with col3:
-    #             poster_id = tab1_poster[i]
-    #             st.image("https://image.tmdb.org/t/p/w500/8sMb6VIWs253IZ0X56vC6v7FjnB.jpg", width=150)
-    #
-    #     elif i % 4 == 3:
-    #         with col4:
-    #             poster_id = tab1_poster[i]
-    #             st.image("https://image.tmdb.org/t/p/w500/8sMb6VIWs253IZ0X56vC6v7FjnB.jpg", width=150)
-
 with tab2:
     sub_option1 = st.selectbox('Please select Sub Recommender!', ('Movie Description Based Recommender',
                                                                   'Metadata Based Recommender'))
@@ -114,6 +90,8 @@ with tab2:
         number2 = st.number_input("Insert a number", min_value=1, max_value=30, step=1, format="%d", key=1)
         if st.button('Show Recommended Courses'):
             recommend = get_recommendations1(smd1, input)
+            st.write(recommend)
+            tab2_poster = recommend[0:number2].reset_index(drop=False)
             st.table(recommend[0:number2].reset_index(drop=True))
 
     elif sub_option1 == 'Metadata Based Recommender':
