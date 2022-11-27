@@ -10,29 +10,29 @@ import warnings
 import time
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=UserWarning)
 
 # <==== Code starts here ====>
 smd1 = pickle.load(open('./pkl/smd1.pkl', 'rb'))
 simple1 = pickle.load(open('./pkl/simple1.pkl', 'rb'))
 similarity1 = pickle.load(open('./pkl/similarity1.pkl', 'rb'))
 
-smd1 = smd1.reset_index()
-titles1 = smd1['title']
-indices1 = pd.Series(smd1.index, index=smd1['title'])
-
 smd2 = pickle.load(open('./pkl/smd2.pkl', 'rb'))
 simple2 = pickle.load(open('./pkl/simple2.pkl', 'rb'))
 similarity2 = pickle.load(open('./pkl/similarity2.pkl', 'rb'))
 
-smd2 = smd2.reset_index()
-titles2 = smd2['title']
-indices2 = pd.Series(smd2.index, index=smd2['title'])
-
 smd3 = pickle.load(open('./pkl/recommendData.pkl', 'rb'))
 collaboModel = pickle.load(open('./pkl/recommendModel.pkl', 'rb'))
 
+gb = pickle.load(open('./pkl/clf1127_2.pkl', 'rb'))
+multilabel = pickle.load(open('./pkl/MultiLabel.pkl', 'rb'))
+vector = pickle.load(open('./pkl/vector.pkl', 'rb'))
 
-def get_recommendations1(title):
+
+def get_recommendations1(smd1, title):
+    smd1 = smd1.reset_index()
+    titles1 = smd1['title']
+    indices1 = pd.Series(smd1.index, index=smd1['title'])
     idx = indices1[title]
     sim_scores = list(enumerate(similarity1[idx]))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
@@ -41,7 +41,11 @@ def get_recommendations1(title):
     return titles1.iloc[movie_indices]
 
 
-def get_recommendations2(title):
+def get_recommendations2(smd2, title):
+    smd2 = smd2.reset_index()
+    titles2 = smd2['title']
+    indices2 = pd.Series(smd2.index, index=smd2['title'])
+
     idx = indices2[title]
     sim_scores = list(enumerate(similarity2[idx]))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
@@ -68,7 +72,8 @@ st.markdown(
 st.markdown("<h4 style='text-align: center; color: black;'>Web App created by Sagar Bapodara</h4>",
             unsafe_allow_html=True)
 
-tab1, tab2, tab3 = st.tabs(["Simple Recommender", "Content Based Recommender", "Collaborative Filtering"])
+tab1, tab2, tab3, tab4 = st.tabs(
+    ["Simple Recommender", "Content Based Recommender", "Collaborative Filtering", "GradientBoostingClassifier"])
 
 with tab1:
     number1 = st.number_input("Insert a number", min_value=1, max_value=250, step=1, format="%d", key=0)
@@ -79,29 +84,37 @@ with tab2:
     sub_option1 = st.selectbox('Please select Sub Recommender!', ('Movie Description Based Recommender',
                                                                   'Metadata Based Recommender'))
     if sub_option1 == 'Movie Description Based Recommender':
-        input = st.text_input("moive name")
+        input = st.text_input("movie name")
         number2 = st.number_input("Insert a number", min_value=1, max_value=30, step=1, format="%d", key=1)
         if st.button('Show Recommended Courses'):
-            recommend = get_recommendations1(input)
+            recommend = get_recommendations1(smd1, input)
             st.table(recommend[0:number2].reset_index(drop=True))
-            st.text(" ")
 
     elif sub_option1 == 'Metadata Based Recommender':
         input = st.text_input("keyword")
-        number3 = st.number_input("Insert a number", min_value=1, max_value=30, step=1, format="%d", key=2)
-        if st.button('Show Recommended Courses', key=10):
-            recommend = get_recommendations2(input)
-            st.table(recommend.iloc[0:number3].reset_index(drop=True))
-            st.text(" ")
+        if input:
+            tab2_sub1 = smd2[smd2['title'].str.contains(input, na=False, case=False)]
+            with st.expander("See Movie list"):
+                st.table(tab2_sub1[['title', 'genres']].reset_index(drop=True))
+                st.write("\n")
+            movie = st.text_input("Movie Name", key=11)
+            number3 = st.number_input("Insert a number", min_value=1, max_value=30, step=1, format="%d", key=2)
+
+            if st.button('Show Recommended Courses', key=10):
+                if len(smd2[smd2['title'] == movie]) == 0:
+                    st.error('Please re-enter the name of the movie', icon="🚨")
+                else:
+                    recommend = get_recommendations2(smd2, movie)
+                    st.table(recommend.iloc[0:number3].reset_index(drop=True))
 
 with tab3:
-    number4 = st.number_input("Insert a UserId", min_value=1, max_value=671, step=1, format="%d", key=3)
-    if st.button('Show Recommended Courses', key=11):
+    number4 = st.number_input("Insert a user id", min_value=1, max_value=671, step=1, format="%d", key=3)
+    if st.button('Show Recommended Courses', key=31):
         col1, col2 = st.columns(2)
         with col1:
             st.write('User rating')
             temp = smd3[smd3['userId'] == number4]
-            st.table(temp[['title', 'rating']])
+            st.table(temp[['title', 'rating']].reset_index(drop=True))
         with col2:
             with st.spinner('Wait for it...'):
                 df = pd.DataFrame(data=collabo(number4), columns=['title', 'score'])
@@ -111,4 +124,37 @@ with tab3:
             st.write('Recommended Movie')
             st.table(df[0:20].reset_index(drop=True))
 
-        # <==== Code ends here ====>
+with tab4:
+    radio = st.radio(
+        "Filter",
+        ('and', 'or'), horizontal=True)
+
+    text1 = st.text_input("Enter Text 1")
+    text2 = st.text_input("Enter Text 2")
+    text3 = st.text_input("Enter Text 3")
+    if text1:
+        if text2:
+            if text3:
+                if radio == 'and':
+                    tab4_sub1 = smd1[(smd1['description'].str.contains(text1, na=False, case=False)) & (
+                        smd1['description'].str.contains(text2, na=False, case=False)) & (
+                                         smd1['description'].str.contains(text3, na=False, case=False))]
+                else:
+                    target = [text1, text2, text3]
+                    tab4_sub1 = smd1[smd1['description'].str.contains('|'.join(target), na=False, case=False)]
+                st.success("Finding " + str(len(tab4_sub1)) + " Movies", icon='✅')
+                with st.expander("See Movie list"):
+                    st.table(tab4_sub1[['title', 'description']].reset_index(drop=True))
+                    st.write("\n")
+                movie = st.text_input("Movie Name", key=41)
+                if st.button('Show Recommended Courses', key=40):
+                    if len(smd1[smd1['title'] == movie]) == 0:
+                        st.error('Please re-enter the name of the movie', icon="🚨")
+                    else:
+                        tab4_sub2 = smd1[smd1['title'] == movie]
+                        tfidf_matrix = vector.transform(tab4_sub2['description'])
+                        pred = gb.predict(tfidf_matrix)
+                        inverse = multilabel.inverse_transform(pred)
+                        st.write("The results of genre prediction through movie explanation : " + inverse[0][0])
+
+# <==== Code ends here ====>
