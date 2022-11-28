@@ -7,7 +7,6 @@ import pandas as pd
 import requests
 import warnings
 import time
-from PIL import Image
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
@@ -64,16 +63,14 @@ def collabo(number):
     return rank
 
 
-st.markdown("<h2 style='text-align: center; color: black;'>🎥 Movie Recommendation System</h2>",
+st.markdown("<h2 style='text-align: center; color: black;'>🎥 Movie Recommendation System 🎥</h2>",
             unsafe_allow_html=True)
 st.markdown(
-    "<h4 style='text-align: center; color: black;'>Find similar courses from a dataset of over 3,000 courses from Coursera!</h4>",
+    "<h5 style='text-align: center; color: black;'>Recommend Movies using dataset consists of 45,000 movies by 270,000 users</h5>",
     unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: center; color: black;'>Web App created by Sagar Bapodara</h4>",
-            unsafe_allow_html=True)
 
 tab1, tab2, tab3, tab4 = st.tabs(
-    ["Simple Recommender", "Content Based Recommender", "Collaborative Filtering", "GradientBoostingClassifier"])
+    ["Simple Recommender", "Content Based Filtering", "Collaborative Based Filtering", "Predict Genre"])
 
 with tab1:
     number1 = st.number_input("Insert a number", min_value=1, max_value=250, step=1, format="%d", key=0)
@@ -88,11 +85,16 @@ with tab2:
     if sub_option1 == 'Movie Description Based Recommender':
         input = st.text_input("movie name")
         number2 = st.number_input("Insert a number", min_value=1, max_value=30, step=1, format="%d", key=1)
-        if st.button('Show Recommended Courses'):
-            recommend = get_recommendations1(smd1, input)
-            st.write(recommend)
-            tab2_poster = recommend[0:number2].reset_index(drop=False)
-            st.table(recommend[0:number2].reset_index(drop=True))
+        if st.button('Show Recommended Movies'):
+            if len(smd2[smd2['title'] == input]) == 0:
+                st.error('Please re-enter the name of the movie', icon="🚨")
+                with st.expander("See Movie list"):
+                    temp2 = smd2[['title', 'overview']].reset_index(drop=True)
+                    st.table(temp2[(temp2['title'].str.contains(input, na=False, case=False))])
+                    st.write("\n")
+            else:
+                recommend = get_recommendations1(smd1, input)
+                st.table(recommend[0:number2].reset_index(drop=True))
 
     elif sub_option1 == 'Metadata Based Recommender':
         input = st.text_input("keyword")
@@ -104,7 +106,7 @@ with tab2:
             movie = st.text_input("Movie Name", key=11)
             number3 = st.number_input("Insert a number", min_value=1, max_value=30, step=1, format="%d", key=2)
 
-            if st.button('Show Recommended Courses', key=10):
+            if st.button('Show Recommended Movies', key=10):
                 if len(smd2[smd2['title'] == movie]) == 0:
                     st.error('Please re-enter the name of the movie', icon="🚨")
                 else:
@@ -113,7 +115,7 @@ with tab2:
 
 with tab3:
     number4 = st.number_input("Insert a user id", min_value=1, max_value=671, step=1, format="%d", key=3)
-    if st.button('Show Recommended Courses', key=31):
+    if st.button('Show Recommended Movies', key=31):
         col1, col2 = st.columns(2)
         with col1:
             st.write('User rating')
@@ -151,7 +153,7 @@ with tab4:
                     st.table(tab4_sub1[['title', 'description']].reset_index(drop=True))
                     st.write("\n")
                 movie = st.text_input("Movie Name", key=41)
-                if st.button('Show Recommended Courses', key=40):
+                if st.button('Show Recommended Movies', key=40):
                     if len(smd1[smd1['title'] == movie]) == 0:
                         st.error('Please re-enter the name of the movie', icon="🚨")
                     else:
@@ -159,6 +161,7 @@ with tab4:
                         tfidf_matrix = vector.transform(tab4_sub2['description'])
                         pred = gb.predict(tfidf_matrix)
                         inverse = multilabel.inverse_transform(pred)
+                        st.write(inverse)
                         st.write("The results of genre prediction through movie explanation : " + inverse[0][0])
 
 # <==== Code ends here ====>
