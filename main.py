@@ -161,7 +161,7 @@ with tab4:
                         tfidf_matrix = vector.transform(tab4_sub2['description'])
                         pred = gb.predict(tfidf_matrix)
                         inverse = multilabel.inverse_transform(pred)
-                        st.write(inverse)
-                        st.write("The results of genre prediction through movie explanation : " + inverse[0][0])
+                        st.write("The results of genre prediction through movie explanation : " + ' '.join(
+                            map(str, inverse)))
 
-# <==== Code ends here ====>
+                        # <==== Code ends here ====>
